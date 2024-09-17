@@ -1,0 +1,32 @@
+BootStrap: docker
+From: python:3.10-slim
+
+%files
+    uv.lock /workdir/uv.lock
+    README.md /workdir/README.md
+    pyproject.toml /workdir/pyproject.toml
+    src/* /workdir/src/
+
+%environment
+    export IS_CLUSTER=1
+    export UV_PROJECT_ENVIRONMENT=/writeable/.venv
+    export VIRTUAL_ENV=/writeable/.venv
+    export UV_LINK_MODE=copy
+
+%post
+    chmod 1777 /tmp
+    apt-get update
+    apt-get install curl -y
+    mkdir /cargo
+    curl -LsSf https://astral.sh/uv/install.sh | CARGO_HOME=/cargo sh
+    mkdir /writeable
+
+    # Add to bin to path
+    echo "export PATH=/cargo/bin:\$PATH" >> $APPTAINER_ENVIRONMENT
+
+    cd /workdir
+    UV_PROJECT_ENVIRONMENT=/writeable/.venv /cargo/bin/uv sync --no-cache
+
+%runscript
+    cd /workdir
+    uv --no-cache run $1

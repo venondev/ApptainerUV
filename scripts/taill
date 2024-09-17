@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Get the directory of the script
+SCRIPT_DIR=$(pwd)
+
+# Check if an argument is provided
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <relative_path_to_folder>"
+    exit 1
+fi
+
+# Resolve the full path
+FULL_PATH="$SCRIPT_DIR/$1"
+
+# Check if the resolved path is a directory
+if [ ! -d "$FULL_PATH" ]; then
+    echo "Error: $FULL_PATH is not a directory."
+    exit 1
+fi
+
+# Get the latest log file
+latest_log=$(ls -t "$FULL_PATH"/* | head -1)
+
+# Check if there are any log files
+if [ -z "$latest_log" ]; then
+    echo "Error: No log files found in $FULL_PATH"
+    exit 1
+fi
+
+# Display the latest log file
+echo "Latest log file: $latest_log"
+
+# Run tail -f on the latest log file
+tail -f "$latest_log"
+
